@@ -1,379 +1,496 @@
 # AutoRia Clone — Car Marketplace API
 
-Навчальний REST API для платформи продажу автомобілів, побудований на **Django REST Framework**.
+Навчальний REST API для платформи продажу автомобілів, розроблений на
+**Django REST Framework**.
 
-Проєкт демонструє роботу з:
+Проєкт реалізує реєстрацію та JWT-аутентифікацію, систему ролей і
+permissions, створення та модерацію оголошень, Basic/Premium акаунти,
+статистику, конвертацію валют, фонові задачі Celery та роботу з хмарною
+MySQL базою даних.
 
-- Django REST Framework
-- JWT-аутентифікацією
-- ролями та permissions
-- Docker / Docker Compose
-- MySQL
-- Redis
-- Celery та Celery Beat
-- фільтрацією та пошуком
-- асинхронними задачами
-- email-сповіщеннями
-- OpenAPI-документацією через DRF-Spectacular
-- інтеграцією з PrivatBank API
+> Проєкт створений у навчальних цілях.
 
-> **Проєкт створений у навчальних цілях.**
+------------------------------------------------------------------------
 
----
-
-# Зміст
+## Зміст
 
 - [Стек технологій](#стек-технологій)
 - [Архітектура](#архітектура)
 - [Запуск проєкту](#запуск-проєкту)
-- [База даних](#база-даних)
-- [Ролі та доступи](#ролі-та-доступи)
-- [Преміум акаунт](#преміум-акаунт)
-- [Основні API endpoints](#основні-api-endpoints)
-- [Celery Tasks](#celery-tasks)
+- [Railway Cloud MySQL](#railway-cloud-mysql)
+- [Fixtures та mock data](#fixtures-та-mock-data)
+- [Ролі та permissions](#ролі-та-permissions)
+- [Basic та Premium](#basic-та-premium)
+- [Модерація](#модерація)
+- [Курси валют](#курси-валют)
+- [Celery](#celery)
+- [API endpoints](#api-endpoints)
 - [Фільтрація та пошук](#фільтрація-та-пошук)
-- [Email сповіщення](#email-сповіщення)
-- [Документація API](#документація-api)
-- [Тестування через Postman](#тестування-через-postman)
-- [Додавання нових ролей і permissions](#додавання-нових-ролей-і-permissions)
+- [API документація](#api-документація)
+- [Postman Collection](#postman-collection)
+- [Email](#email)
 - [Docker](#docker)
+- [Перевірка після клонування](#перевірка-після-клонування)
+- [AWS / масштабування](#aws--масштабування)
+- [Безпека](#безпека)
 
----
+------------------------------------------------------------------------
 
-# Стек технологій
+## Стек технологій
 
-## Backend
+### Backend
 
 - **Python 3.12**
 - **Django 6**
 - **Django REST Framework**
-- **MySQL 8.4** — основна база даних
-- **Redis** — брокер повідомлень для Celery
-- **Celery + Celery Beat** — асинхронні та періодичні задачі
-- **Docker / Docker Compose** — контейнеризація
+- **Railway MySQL** — хмарна база даних
+- **Redis** — broker для Celery
+- **Celery**
+- **Celery Beat**
+- **Docker / Docker Compose**
 
-## Автентифікація
+### Authentication
 
 - **JWT**
 - **djangorestframework-simplejwt**
 
-## Документація API
+### API та інші бібліотеки
 
-- **DRF-Spectacular**
-- **Swagger UI**
-- **ReDoc**
-
-## Інтеграції
-
+- **DRF-Spectacular** — OpenAPI / Swagger / ReDoc
+- **django-filter** — фільтрація
+- **django-celery-results** — результати Celery
+- **Pillow** — робота із зображеннями
 - **PrivatBank API** — отримання курсів валют
 
-## Інші бібліотеки
+------------------------------------------------------------------------
 
-- **django-filter** — фільтрація оголошень
-- **Pillow** — робота із зображеннями
-- **django-celery-results** — збереження результатів Celery
+## Архітектура
 
----
+Проєкт розділений на окремі Django apps:
 
-# Архітектура
+| App             | Призначення                                    |
+|-----------------|------------------------------------------------|
+| `users`         | користувачі, профілі, ролі та permissions      |
+| `auth`          | реєстрація, login та JWT                       |
+| `listing`       | оголошення та фотографії                       |
+| `moderation`    | автоматична та ручна модерація                 |
+| `cars`          | марки та моделі автомобілів                    |
+| `listing_stats` | статистика оголошень                           |
+| `payment`       | курси валют та перерахунок цін                 |
+| `core`          | спільні permissions, сервіси та інфраструктура |
 
-Проєкт розділений на Django apps відповідно до окремих доменів:
+Для фонових задач використовується **Celery**, broker — **Redis**, а
+періодичні задачі запускаються через **Celery Beat**.
 
-| App | Призначення |
-|-----|-------------|
-| `users` | користувачі, ролі, permissions, профілі |
-| `auth` | реєстрація, логін, JWT |
-| `listing` | оголошення та робота з ними |
-| `moderation` | модерація оголошень |
-| `cars` | бренди та моделі автомобілів |
-| `listing_stats` | статистика оголошень |
-| `payment` | курси валют та перерахунок цін |
-| `core` | спільні permissions, сервіси та інша інфраструктура |
+Фінальна Docker-конфігурація містить чотири сервіси:
 
-Для фонових задач використовується **Celery**, для брокера повідомлень — **Redis**, а для періодичного запуску задач — **Celery Beat**.
+``` text
+app
+redis
+celery
+celery_beat
+```
 
-Архітектура ролей побудована через окремі `Role`, `CustomPermission` та зв'язки між ними. Це дозволяє надалі додавати нові ролі та права доступу без прив'язки всієї бізнес-логіки лише до чотирьох початкових ролей.
+MySQL не запускається локальним Docker-контейнером. Проєкт використовує
+**Railway Cloud MySQL**.
 
----
+------------------------------------------------------------------------
 
 # Запуск проєкту
 
 ## 1. Клонування репозиторію
 
-```bash
-git clone <repository-url>
+``` bash
+git clone https://github.com/VladTsiusmak/test_python.git
 cd test_python
+```
+
+Основна гілка:
+
+``` text
+main
 ```
 
 ## 2. Створення `.env`
 
-Створіть файл `.env` у корені проєкту:
+У корені проєкту знаходиться `.env.example`.
 
-```env
-MYSQL_USER=autoria
-MYSQL_PASSWORD=autoria
-MYSQL_DATABASE=autoria
-MYSQL_HOST=db
-MYSQL_PORT=3306
+Створіть `.env` на його основі.
+
+### Git Bash / Linux / macOS
+
+``` bash
+cp .env.example .env
 ```
 
-Секретні ключі, паролі та production credentials не повинні зберігатися у Git.
+### Windows PowerShell
+
+``` powershell
+Copy-Item .env.example .env
+```
+
+Заповніть `.env`:
+
+``` env
+# Railway MySQL
+MYSQL_USER=root
+MYSQL_PASSWORD=<RAILWAY_MYSQL_PASSWORD>
+MYSQL_DATABASE=railway
+MYSQL_HOST=<RAILWAY_PUBLIC_HOST>
+MYSQL_PORT=<RAILWAY_PUBLIC_PORT>
+
+# Email
+EMAIL_HOST=
+EMAIL_HOST_USER=
+EMAIL_HOST_PASSWORD=
+EMAIL_PORT=2525
+MANAGERS_EMAIL=
+```
+
+Параметри підключення до MySQL беруться з Railway:
+
+``` text
+MySQL -> Connect -> Public Network
+```
+
+Railway connection string має формат:
+
+``` text
+mysql://USER:PASSWORD@HOST:PORT/DATABASE
+```
+
+> Реальні паролі та production credentials не повинні зберігатися у Git.
+> Файл `.env` знаходиться у `.gitignore`.
 
 ## 3. Запуск Docker
 
-```bash
+``` bash
 docker compose up -d --build
 ```
 
-Docker Compose запускає:
+Після запуску перевірте контейнери:
 
-- Django application;
-- MySQL 8.4;
-- Redis;
-- Celery worker;
-- Celery Beat.
-
-## 4. Перевірка контейнерів
-
-```bash
+``` bash
 docker compose ps
 ```
 
-Для перегляду логів Django:
+Очікуються сервіси:
 
-```bash
-docker compose logs -f app
+``` text
+app           Up
+redis         Up
+celery        Up
+celery_beat   Up
 ```
 
-Для Celery:
+## 4. Django check
 
-```bash
-docker compose logs -f celery
+``` bash
+docker compose exec app python manage.py check
+```
+
+Очікуваний результат:
+
+``` text
+System check identified no issues (0 silenced).
 ```
 
 ## 5. Міграції
 
-Міграції застосовуються автоматично під час запуску контейнера `app`.
+Міграції запускаються автоматично під час старту контейнера `app`.
 
-За необхідності:
+Перевірити їх можна командою:
 
-```bash
+``` bash
+docker compose exec app python manage.py showmigrations
+```
+
+За необхідності запустити вручну:
+
+``` bash
 docker compose exec app python manage.py migrate
 ```
 
-## 6. Fixtures
+Не запускайте ручний `migrate` одночасно з першим стартом контейнера
+`app`, оскільки контейнер уже виконує migrations автоматично.
 
-Для чистої бази даних базові fixtures можна завантажити командами:
+## 6. Створення адміністратора
 
-```bash
+За необхідності:
+
+``` bash
+docker compose exec app python manage.py createsuperuser
+```
+
+------------------------------------------------------------------------
+
+# Railway Cloud MySQL
+
+Фінальна версія проєкту використовує **MySQL у Railway Cloud**.
+
+Django отримує параметри підключення через environment variables:
+
+``` text
+MYSQL_USER
+MYSQL_PASSWORD
+MYSQL_DATABASE
+MYSQL_HOST
+MYSQL_PORT
+```
+
+Локальний MySQL-контейнер у фінальному `docker-compose.yml` відсутній.
+
+Після запуску migrations у Railway створюються таблиці Django та
+застосунку, зокрема:
+
+``` text
+user
+profile
+role
+role_permissions
+custom_permission
+cars_brand
+car_model
+car_images
+listing
+listing_stats
+listing_moderation
+region
+currency_rate
+django_migrations
+django_celery_results_*
+token_blacklist_*
+```
+
+Data migration:
+
+``` text
+users.0002_seed_roles_and_permissions
+```
+
+створює базові ролі та permissions.
+
+------------------------------------------------------------------------
+
+# Fixtures та mock data
+
+У проєкті передбачені fixtures для тестових даних.
+
+Основні fixtures:
+
+``` text
+regions.json
+brands.json
+car_models.json
+listings.json
+```
+
+Для чистої бази базові довідники можна завантажити командами:
+
+``` bash
 docker compose exec app python manage.py loaddata regions.json
 docker compose exec app python manage.py loaddata brands.json
 docker compose exec app python manage.py loaddata car_models.json
 ```
 
-`listings.json`, якщо використовується, може залежати від конкретних користувачів, тому його потрібно завантажувати лише після створення відповідних користувачів.
+`listings.json` може залежати від конкретних користувачів, тому його
+потрібно завантажувати лише після створення відповідних користувачів.
 
-## 7. Створення адміністратора
+Premium-оплата у навчальній версії також реалізована як **mock**, без
+реальної платіжної системи.
 
-```bash
-docker compose exec app python manage.py createsuperuser
-```
+------------------------------------------------------------------------
 
----
+# Ролі та permissions
 
-# База даних
+У системі передбачені ролі:
 
-Проєкт використовує **MySQL 8.4**, що запускається як окремий Docker-контейнер.
+| Роль        | Основні можливості                                    |
+|-------------|-------------------------------------------------------|
+| **Buyer**   | перегляд оголошень та створення першого оголошення    |
+| **Seller**  | створення, редагування та видалення власних оголошень |
+| **Manager** | модерація та управління користувачами                 |
+| **Admin**   | повний адміністративний доступ та призначення Manager |
 
-Всередині Docker Compose Django підключається до:
+Основні правила:
 
-```text
-Host: db
-Port: 3306
-```
-
-На локальній машині MySQL доступний через:
-
-```text
-Port: 3308
-```
-
-Дані MySQL зберігаються у Docker volume:
-
-```text
-mysql_data
-```
-
-Тому звичайний `docker compose down` не видаляє дані бази.
-
-> Не використовуйте `docker compose down -v`, якщо потрібно зберегти локальну базу даних.
-
----
-
-# Ролі та доступи
-
-| Роль | Можливості |
-|------|------------|
-| **Buyer** | перегляд оголошень, створення першого оголошення |
-| **Seller** | створення, редагування та видалення власних оголошень, робота з фото |
-| **Manager** | модерація оголошень, управління користувачами, статистика |
-| **Admin** | повний доступ до системи, створення Manager |
-
-Додаткові правила:
-
-- Buyer автоматично може перейти до ролі Seller після створення оголошення.
-- Basic-акаунт може мати лише одне активне/очікуюче оголошення.
-- Premium-акаунт може створювати декілька оголошень.
-- Статистика оголошень доступна Premium-користувачам та адміністративним ролям відповідно до permissions.
+- Buyer може перейти до Seller після створення оголошення.
+- Basic Seller може мати лише одне активне/очікуюче оголошення.
+- Premium Seller може створювати декілька оголошень.
 - Manager може блокувати та розблоковувати користувачів.
 - Тільки Admin може призначити користувачу роль Manager.
-- Manager та Admin можуть працювати з оголошеннями, що очікують ручної модерації.
+- Manager та Admin можуть працювати з оголошеннями, які потребують
+  ручної модерації.
+- Ролі та permissions винесені в окремі моделі, що дозволяє розширювати
+  систему новими ролями.
 
----
+------------------------------------------------------------------------
 
-# Преміум акаунт
+# Basic та Premium
 
-Оплата у навчальній версії реалізована як **mock-функціонал** без підключення реальної платіжної системи.
+За замовчуванням Seller має Basic-акаунт.
 
-```http
+Для навчального тестування Premium використовується mock endpoint:
+
+``` http
 POST /api/users/me/premium/mock/
 ```
-
-Ендпоінт активує Premium-акаунт на тестовий період.
 
 Premium надає:
 
 - можливість створювати більше одного оголошення;
-- перегляд статистики оголошень;
-- кількість переглядів за день, тиждень та місяць;
+- загальну кількість переглядів;
+- статистику за день;
+- статистику за тиждень;
+- статистику за місяць;
 - середню ціну автомобіля у регіоні;
 - середню ціну автомобіля по Україні.
 
----
+------------------------------------------------------------------------
 
-# Основні API endpoints
+# Модерація
 
-## Auth
+Після створення або редагування оголошення запускається асинхронна
+перевірка.
 
-| Метод | URL | Опис |
-|------|-----|------|
-| POST | `/api/auth/register/` | Реєстрація |
-| POST | `/api/auth/login/` | Логін |
-| POST | `/api/auth/refresh/` | Оновлення JWT |
-| POST | `/api/auth/logout/` | Вихід |
+Основний flow:
 
-## Users
+1.  оголошення створюється;
+2.  запускається Celery moderation task;
+3.  текст перевіряється на заборонені слова;
+4.  коректне оголошення переходить у `active`;
+5.  проблемне оголошення переходить у `rejected`;
+6.  Seller може виправити оголошення;
+7.  після вичерпання дозволених спроб оголошення переходить у
+    `inactive`;
+8.  Manager отримує службове повідомлення.
 
-| Метод | URL | Опис | Доступ |
-|------|-----|------|--------|
-| GET | `/api/users/` | Список користувачів | Admin / Manager |
-| GET | `/api/users/me/` | Поточний користувач | Авторизований |
-| PATCH | `/api/users/me/update/` | Оновити власний акаунт | Авторизований |
-| DELETE | `/api/users/me/delete/` | Видалити власний акаунт | Авторизований |
-| POST | `/api/users/me/premium/mock/` | Активувати Premium | Buyer / Seller |
-| PATCH | `/api/users/<pk>/block/` | Заблокувати користувача | Admin / Manager |
-| PATCH | `/api/users/<pk>/unblock/` | Розблокувати користувача | Admin / Manager |
-| PATCH | `/api/users/<pk>/manager/` | Призначити Manager | Admin |
+Manager/Admin також можуть виконувати ручну модерацію.
 
-## Listings
-
-| Метод | URL | Опис | Доступ |
-|------|-----|------|--------|
-| GET | `/api/listings/` | Список активних оголошень | Публічно |
-| GET | `/api/listings/<pk>/` | Перегляд оголошення | Публічно |
-| GET | `/api/listings/regions/` | Список регіонів | Публічно |
-| GET | `/api/listings/my/` | Власні оголошення | Seller |
-| POST | `/api/listings/create/` | Створити оголошення | Buyer / Seller |
-| PATCH | `/api/listings/update/<pk>/` | Редагувати оголошення | Власник |
-| DELETE | `/api/listings/delete/<pk>/` | Зняти оголошення з продажу | Власник |
-| POST | `/api/listings/<pk>/photos/` | Завантажити фото | Власник |
-| DELETE | `/api/listings/photos/<pk>/` | Видалити фото | Власник |
-| POST | `/api/listings/report-problem/<pk>/` | Поскаржитися на оголошення | Авторизований |
-| GET | `/api/listings/edit/` | Pending-оголошення | Admin / Manager |
-| PATCH | `/api/listings/moderation/<pk>/` | Модерація оголошення | Admin / Manager |
-| GET | `/api/listings/statistics/<pk>/` | Статистика оголошення | За permission |
-
-## Cars
-
-| Метод | URL | Опис |
-|------|-----|------|
-| GET | `/api/cars/brands/` | Список брендів |
-| GET | `/api/cars/models/` | Список моделей |
-| GET | `/api/cars/brands/<pk>/models/` | Моделі конкретного бренду |
-| POST | `/api/cars/request-brand/` | Запит на нову марку |
-| POST | `/api/cars/brands/` | Створення бренду |
-| POST | `/api/cars/models/` | Створення моделі |
-
-## Payment
-
-| Метод | URL | Опис |
-|------|-----|------|
-| GET | `/api/payment/rate/` | Поточний курс валют |
-
----
-
-# Модерація оголошень
-
-Після створення або редагування оголошення запускається асинхронна перевірка тексту.
-
-Основний процес:
-
-1. оголошення створюється зі статусом `pending`;
-2. Celery запускає задачу модерації;
-3. текст перевіряється на заборонені слова;
-4. чисте оголошення отримує статус `active`;
-5. проблемне оголошення отримує статус `rejected`;
-6. користувач може виправити оголошення;
-7. після вичерпання дозволених спроб оголошення переводиться в `inactive`, а менеджеру надсилається повідомлення.
-
-Manager/Admin також можуть працювати з pending-оголошеннями через окремий endpoint модерації.
-
----
+------------------------------------------------------------------------
 
 # Курси валют
 
-Оголошення підтримують:
+Підтримуються:
 
-- USD;
-- EUR;
-- UAH.
-
-Система зберігає початкову валюту та початкову ціну оголошення.
-
-Курси отримуються через **PrivatBank API**, після чого система розраховує ціни в інших підтримуваних валютах.
-
----
-
-# Celery Tasks
-
-| Task | Запуск | Опис |
-|------|--------|------|
-| `fetch_currency_rates_task` | щодня о 09:00 | Отримання курсів валют |
-| `update_listings_prices_task` | після оновлення курсів | Перерахунок цін |
-| `moderation_listings_task` | при створенні / редагуванні | Модерація оголошення |
-| `send_blocked_listing_email_task` | при блокуванні оголошення | Email менеджеру |
-
-Для ручного запуску оновлення курсів:
-
-```bash
-docker compose exec celery celery -A config call apps.payment.tasks.fetch_currency_rates_task
+``` text
+USD
+EUR
+UAH
 ```
 
----
+Система зберігає:
+
+- початкову ціну;
+- початкову валюту;
+- курс валют;
+- конвертовані ціни.
+
+Курси отримуються через **PrivatBank API** та зберігаються у БД.
+
+Після оновлення курсу Celery запускає перерахунок цін оголошень.
+
+------------------------------------------------------------------------
+
+# Celery
+
+Основні фонові задачі:
+
+| Task                              | Призначення               |
+|-----------------------------------|---------------------------|
+| `fetch_currency_rates_task`       | отримання курсів валют    |
+| `update_listings_prices_task`     | перерахунок цін оголошень |
+| `moderation_listings_task`        | автоматична модерація     |
+| `send_blocked_listing_email_task` | email при блокуванні      |
+
+Celery Beat запускає оновлення курсів щодня о **09:00**.
+
+Логи worker:
+
+``` bash
+docker compose logs -f celery
+```
+
+Логи Beat:
+
+``` bash
+docker compose logs -f celery_beat
+```
+
+------------------------------------------------------------------------
+
+# API endpoints
+
+## Auth
+
+| Method | URL                   | Опис          |
+|--------|-----------------------|---------------|
+| POST   | `/api/auth/register/` | реєстрація    |
+| POST   | `/api/auth/login/`    | login         |
+| POST   | `/api/auth/refresh/`  | оновлення JWT |
+| POST   | `/api/auth/logout/`   | logout        |
+
+## Users
+
+| Method | URL                           | Опис                       |
+|--------|-------------------------------|----------------------------|
+| GET    | `/api/users/`                 | список користувачів        |
+| GET    | `/api/users/me/`              | поточний користувач        |
+| PATCH  | `/api/users/me/update/`       | оновлення власного акаунта |
+| DELETE | `/api/users/me/delete/`       | видалення власного акаунта |
+| POST   | `/api/users/me/premium/mock/` | mock Premium               |
+| PATCH  | `/api/users/<pk>/block/`      | блокування користувача     |
+| PATCH  | `/api/users/<pk>/unblock/`    | розблокування користувача  |
+| PATCH  | `/api/users/<pk>/manager/`    | призначення Manager        |
+
+## Cars
+
+| Method | URL                             | Опис                    |
+|--------|---------------------------------|-------------------------|
+| GET    | `/api/cars/brands/`             | список марок            |
+| GET    | `/api/cars/models/`             | список моделей          |
+| GET    | `/api/cars/brands/<pk>/models/` | моделі конкретної марки |
+| POST   | `/api/cars/request-brand/`      | запит на нову марку     |
+| POST   | `/api/cars/brands/`             | створення марки         |
+| POST   | `/api/cars/models/`             | створення моделі        |
+
+## Listings
+
+| Method | URL                                  | Опис                 |
+|--------|--------------------------------------|----------------------|
+| GET    | `/api/listings/`                     | активні оголошення   |
+| GET    | `/api/listings/<pk>/`                | деталі оголошення    |
+| GET    | `/api/listings/regions/`             | регіони              |
+| GET    | `/api/listings/my/`                  | власні оголошення    |
+| POST   | `/api/listings/create/`              | створення оголошення |
+| PATCH  | `/api/listings/update/<pk>/`         | редагування          |
+| DELETE | `/api/listings/delete/<pk>/`         | зняття з продажу     |
+| POST   | `/api/listings/<pk>/photos/`         | додавання фото       |
+| DELETE | `/api/listings/photos/<pk>/`         | видалення фото       |
+| POST   | `/api/listings/report-problem/<pk>/` | скарга               |
+| GET    | `/api/listings/edit/`                | pending listings     |
+| PATCH  | `/api/listings/moderation/<pk>/`     | ручна модерація      |
+| GET    | `/api/listings/statistics/<pk>/`     | статистика           |
+
+## Payment
+
+| Method | URL                  | Опис                |
+|--------|----------------------|---------------------|
+| GET    | `/api/payment/rate/` | поточні курси валют |
+
+------------------------------------------------------------------------
 
 # Фільтрація та пошук
 
 Основний endpoint:
 
-```text
+``` text
 /api/listings/
 ```
 
-Підтримує фільтрацію, пошук та сортування.
-
 Приклади:
 
-```text
+``` text
 ?body_type=suv
 ?fuel_type=electric
 ?region=1
@@ -388,178 +505,220 @@ docker compose exec celery celery -A config call apps.payment.tasks.fetch_curren
 
 Параметри можна комбінувати:
 
-```text
+``` text
 /api/listings/?fuel_type=electric&year_min=2020&price_usd_max=30000
 ```
 
----
+------------------------------------------------------------------------
 
-# Email сповіщення
+# API документація
 
-У поточній локальній конфігурації для розробки використовується:
+Після запуску доступні:
 
-```python
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-```
-
-Тому email-повідомлення виводяться у логи контейнера замість відправлення на реальну поштову адресу.
-
-Система підтримує службові повідомлення:
-
-- після блокування оголошення;
-- при скарзі на оголошення;
-- при запиті на додавання нової марки/моделі.
-
-Для production можна налаштувати SMTP через змінні середовища.
-
----
-
-# Документація API
-
-Після запуску проєкту:
-
-| Інтерфейс | URL |
-|-----------|-----|
-| Swagger UI | `http://localhost:8000/api/docs/` |
-| ReDoc | `http://localhost:8000/api/redoc/` |
+| Інтерфейс      | URL                                 |
+|----------------|-------------------------------------|
+| Swagger UI     | `http://localhost:8000/api/docs/`   |
+| ReDoc          | `http://localhost:8000/api/redoc/`  |
 | OpenAPI schema | `http://localhost:8000/api/schema/` |
 
-Swagger UI дозволяє переглядати endpoints, параметри, схеми запитів/відповідей та виконувати API-запити.
+Swagger дозволяє переглядати endpoints, параметри та схеми
+запитів/відповідей.
 
----
+------------------------------------------------------------------------
 
-# Тестування через Postman
+# Postman Collection
 
-Для проєкту передбачена Postman Collection.
+У репозиторії знаходиться готова Postman Collection:
 
-Рекомендовані Environment variables:
-
-| Variable | Значення |
-|----------|----------|
-| `host` | `http://localhost:8000` |
-| `access` | JWT access token |
-| `refresh` | JWT refresh token |
-
-Колекція повинна охоплювати основні сценарії Auth, Users, Cars, Listings, Statistics та Payment.
-
----
-
-# Додавання нових ролей і permissions
-
-Ролі та permissions є окремою частиною архітектури.
-
-Для додавання нового permission можна створити data migration:
-
-```bash
-docker compose exec app python manage.py makemigrations users --empty --name add_new_permission
+``` text
+postman/AutoRia Clone API.postman_collection.json
 ```
 
-Після опису permission у міграції:
+Рекомендований flow перевірки:
 
-```bash
-docker compose exec app python manage.py migrate
+``` text
+1. Auth — Register / Login
+2. Users — Profile / Roles / Premium
+3. Cars — Brands / Models
+4. Listings — Create / Read / Update / Photos
+5. Moderation
+6. Statistics
+7. Payment
 ```
 
-Такий підхід дозволяє надалі розширювати систему ролями для дилерських центрів, менеджерів, продавців, механіків та інших типів співробітників.
+Основна змінна:
 
----
+``` text
+host = http://localhost:8000
+```
+
+JWT access/refresh tokens отримуються через Auth flow та
+використовуються для авторизованих запитів.
+
+------------------------------------------------------------------------
+
+# Email
+
+Для development можна використовувати Django console email backend.
+
+У такому випадку email-повідомлення виводяться у logs замість реальної
+відправки.
+
+Логи Django:
+
+``` bash
+docker compose logs -f app
+```
+
+Логи Celery:
+
+``` bash
+docker compose logs -f celery
+```
+
+------------------------------------------------------------------------
 
 # Docker
 
-Проєкт складається з п'яти основних сервісів:
-
-```text
-app
-db
-redis
-celery
-celery_beat
-```
-
 ## Запуск
 
-```bash
+``` bash
 docker compose up -d --build
 ```
 
 ## Статус
 
-```bash
+``` bash
 docker compose ps
+```
+
+## Django check
+
+``` bash
+docker compose exec app python manage.py check
+```
+
+## Міграції
+
+``` bash
+docker compose exec app python manage.py migrate
 ```
 
 ## Логи Django
 
-```bash
+``` bash
 docker compose logs -f app
 ```
 
 ## Логи Celery
 
-```bash
+``` bash
 docker compose logs -f celery
 ```
 
-## Логи всіх сервісів
+## Усі логи
 
-```bash
+``` bash
 docker compose logs -f
 ```
 
-## Перезапуск Django
+## Перезапуск
 
-```bash
+``` bash
 docker compose restart app
 ```
 
 ## Зупинка
 
-```bash
+``` bash
 docker compose down
 ```
 
----
+------------------------------------------------------------------------
 
-# Перевірка роботи
+# Перевірка після клонування
 
-Після запуску:
+Для перевірки проєкту з чистого середовища:
 
-```bash
-curl http://localhost:8000/api/listings/
+``` bash
+git clone https://github.com/VladTsiusmak/test_python.git
+cd test_python
+cp .env.example .env
 ```
 
-Swagger UI:
+Заповніть Railway credentials у `.env`, після чого:
 
-```text
+``` bash
+docker compose up -d --build
+docker compose ps
+docker compose exec app python manage.py check
+docker compose exec app python manage.py showmigrations
+```
+
+Очікуваний результат:
+
+``` text
+app           Up
+redis         Up
+celery        Up
+celery_beat   Up
+```
+
+та:
+
+``` text
+System check identified no issues (0 silenced).
+```
+
+Swagger:
+
+``` text
 http://localhost:8000/api/docs/
 ```
 
-ReDoc:
+------------------------------------------------------------------------
 
-```text
-http://localhost:8000/api/redoc/
+# AWS / масштабування
+
+Поточна база даних винесена у Railway Cloud.
+
+Для production-середовища проєкт можна перенести в AWS за такою схемою:
+
+``` text
+Internet
+   |
+Application Load Balancer
+   |
+Django REST API (ECS / Fargate)
+   |
+   +---- RDS MySQL
+   +---- ElastiCache Redis
+   +---- S3 Media
+
+Celery Worker (ECS / Fargate)
+Celery Beat   (ECS / Fargate)
 ```
 
----
+Компоненти можна масштабувати незалежно:
 
-# Подальше розгортання
+- Django API;
+- Celery workers;
+- Redis;
+- MySQL;
+- media/static storage.
 
-Проєкт контейнеризований, тому його можна адаптувати для розгортання у хмарній інфраструктурі.
+------------------------------------------------------------------------
 
-Для AWS production-середовища логічне розділення компонентів:
+# Безпека
 
-- Django API — контейнерний сервіс;
-- MySQL — керована база даних;
-- Redis — керований Redis-сервіс;
-- Celery worker — окремий контейнер;
-- Celery Beat — окремий контейнер;
-- media/static — об'єктне сховище;
-- secrets — змінні середовища / secret storage.
+- `.env` не комітиться у Git;
+- Railway password не зберігається у README;
+- `.env.example` містить лише шаблон;
+- production credentials передаються через environment variables;
+- JWT використовується для авторизації API.
 
-Це дозволяє масштабувати API та фонові worker-и незалежно один від одного.
-
----
+------------------------------------------------------------------------
 
 # Ліцензія
 
-Цей проєкт створений у навчальних цілях.
+Проєкт створений у навчальних цілях.
