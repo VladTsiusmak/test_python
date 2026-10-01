@@ -1,0 +1,12 @@
+[
+  {"model": "cars.brand", "pk": 1, "fields": {"name": "BMW"}},
+  {"model": "cars.brand", "pk": 2, "fields": {"name": "Toyota"}},
+  {"model": "cars.brand", "pk": 3, "fields": {"name": "Volkswagen"}},
+  {"model": "cars.brand", "pk": 4, "fields": {"name": "Daewoo"}},
+  {"model": "cars.brand", "pk": 5, "fields": {"name": "Tesla"}},
+  {"model": "cars.brand", "pk": 6, "fields": {"name": "Mercedes-Benz"}},
+  {"model": "cars.brand", "pk": 7, "fields": {"name": "Audi"}},
+  {"model": "cars.brand", "pk": 8, "fields": {"name": "Ford"}},
+  {"model": "cars.brand", "pk": 9, "fields": {"name": "Hyundai"}},
+  {"model": "cars.brand", "pk": 10, "fields": {"name": "Skoda"}}
+]

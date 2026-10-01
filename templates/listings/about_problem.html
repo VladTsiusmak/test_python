@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block body %}
+    <h3>Користувач {{ owner_name }} повідомив про проблему з оголошенням {{ listing_id }}</h3>
+    <p>Повідомлення: "{{ message }}"</p>
+    <p>Перевір оголошення під id {{ listing_id }}</p>
+{% endblock %}

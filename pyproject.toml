@@ -1,0 +1,18 @@
+[project]
+name = "test-python"
+version = "0.1.0"
+description = "AutoRia clone backend API"
+authors = [
+    {name = "Владислав", email = "tsuva01032005@gmail.com"}
+]
+requires-python = ">=3.12,<3.13"
+dependencies = ["django (>=6.1.1,<7.0.0)", "mysqlclient (>=2.2.8,<3.0.0)", "python-dotenv (>=1.2.3,<2.0.0)", "celery (>=5.6.3,<6.0.0)", "redis (>=8.1.0,<9.0.0)", "django-celery-results (>=2.6.0,<3.0.0)", "djangorestframework (>=3.18.1,<4.0.0)", "pillow (>=12.3.0,<13.0.0)", "django-filter (>=26.1,<27.0)", "drf-spectacular (>=0.30.0,<0.31.0)", "djangorestframework-simplejwt (>=5.5.1,<6.0.0)", "requests (>=2.34.2,<3.0.0)"]
+
+
+[tool.poetry]
+package-mode = false
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,64 @@
+services:
+  app:
+    build:
+      context: .
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    restart: on-failure
+    command: >
+      sh -c "python manage.py wait_db &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      - db
+      - redis
+      - celery
+      - celery_beat
+
+  db:
+    image: mysql:8.4
+    restart: on-failure
+    environment:
+      MYSQL_DATABASE: autoria
+      MYSQL_USER: autoria
+      MYSQL_PASSWORD: autoria
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  redis:
+    image: redis:alpine
+    restart: on-failure
+
+  celery:
+    build:
+      context: .
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    restart: on-failure
+    command: sh -c "celery -A config worker -l info"
+    depends_on:
+      - redis
+
+  celery_beat:
+    build:
+      context: .
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    restart: on-failure
+    command: sh -c "celery -A config beat -l info"
+    depends_on:
+      - redis
+
+volumes:
+  mysql_data:

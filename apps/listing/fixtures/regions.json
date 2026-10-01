@@ -1,0 +1,378 @@
+[
+  {
+    "model": "listing.region",
+    "pk": 1,
+    "fields": {
+      "name": "Київ",
+      "slug": "kyiv"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 2,
+    "fields": {
+      "name": "Київська область",
+      "slug": "kyiv_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 3,
+    "fields": {
+      "name": "Харків",
+      "slug": "kharkiv"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 4,
+    "fields": {
+      "name": "Харківська область",
+      "slug": "kharkiv_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 5,
+    "fields": {
+      "name": "Одеса",
+      "slug": "odesa"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 6,
+    "fields": {
+      "name": "Одеська область",
+      "slug": "odesa_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 7,
+    "fields": {
+      "name": "Дніпро",
+      "slug": "dnipro"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 8,
+    "fields": {
+      "name": "Дніпропетровська область",
+      "slug": "dnipro_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 9,
+    "fields": {
+      "name": "Львів",
+      "slug": "lviv"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 10,
+    "fields": {
+      "name": "Львівська область",
+      "slug": "lviv_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 11,
+    "fields": {
+      "name": "Запоріжжя",
+      "slug": "zaporizhzhia"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 12,
+    "fields": {
+      "name": "Запорізька область",
+      "slug": "zaporizhzhia_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 13,
+    "fields": {
+      "name": "Вінниця",
+      "slug": "vinnytsia"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 14,
+    "fields": {
+      "name": "Вінницька область",
+      "slug": "vinnytsia_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 15,
+    "fields": {
+      "name": "Полтава",
+      "slug": "poltava"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 16,
+    "fields": {
+      "name": "Полтавська область",
+      "slug": "poltava_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 17,
+    "fields": {
+      "name": "Черкаси",
+      "slug": "cherkasy"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 18,
+    "fields": {
+      "name": "Черкаська область",
+      "slug": "cherkasy_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 19,
+    "fields": {
+      "name": "Суми",
+      "slug": "sumy"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 20,
+    "fields": {
+      "name": "Сумська область",
+      "slug": "sumy_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 21,
+    "fields": {
+      "name": "Житомир",
+      "slug": "zhytomyr"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 22,
+    "fields": {
+      "name": "Житомирська область",
+      "slug": "zhytomyr_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 23,
+    "fields": {
+      "name": "Чернігів",
+      "slug": "chernihiv"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 24,
+    "fields": {
+      "name": "Чернігівська область",
+      "slug": "chernihiv_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 25,
+    "fields": {
+      "name": "Рівне",
+      "slug": "rivne"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 26,
+    "fields": {
+      "name": "Рівненська область",
+      "slug": "rivne_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 27,
+    "fields": {
+      "name": "Луцьк",
+      "slug": "lutsk"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 28,
+    "fields": {
+      "name": "Волинська область",
+      "slug": "volyn_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 29,
+    "fields": {
+      "name": "Івано-Франківськ",
+      "slug": "ivano-frankivsk"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 30,
+    "fields": {
+      "name": "Івано-Франківська область",
+      "slug": "ivano_frankivsk_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 31,
+    "fields": {
+      "name": "Тернопіль",
+      "slug": "ternopil"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 32,
+    "fields": {
+      "name": "Тернопільська область",
+      "slug": "ternopil_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 33,
+    "fields": {
+      "name": "Ужгород",
+      "slug": "uzhhorod"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 34,
+    "fields": {
+      "name": "Закарпатська область",
+      "slug": "zakarpattia_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 35,
+    "fields": {
+      "name": "Чернівці",
+      "slug": "chernivtsi"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 36,
+    "fields": {
+      "name": "Чернівецька область",
+      "slug": "chernivtsi_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 37,
+    "fields": {
+      "name": "Херсон",
+      "slug": "kherson"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 38,
+    "fields": {
+      "name": "Херсонська область",
+      "slug": "kherson_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 39,
+    "fields": {
+      "name": "Миколаїв",
+      "slug": "mykolaiv"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 40,
+    "fields": {
+      "name": "Миколаївська область",
+      "slug": "mykolaiv_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 41,
+    "fields": {
+      "name": "Кропивницький",
+      "slug": "kropyvnytskyi"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 42,
+    "fields": {
+      "name": "Кіровоградська область",
+      "slug": "kirovohrad_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 43,
+    "fields": {
+      "name": "Хмельницький",
+      "slug": "khmelnytskyi"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 44,
+    "fields": {
+      "name": "Хмельницька область",
+      "slug": "khmelnytskyi_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 45,
+    "fields": {
+      "name": "Автономна Республіка Крим",
+      "slug": "crimea"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 46,
+    "fields": {
+      "name": "Донецька область",
+      "slug": "donetsk_region"
+    }
+  },
+  {
+    "model": "listing.region",
+    "pk": 47,
+    "fields": {
+      "name": "Луганська область",
+      "slug": "luhansk_region"
+    }
+  }
+]
